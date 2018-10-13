@@ -26,6 +26,17 @@ export const DeleteGrudge = `
   }
 `;
 
+export const SubscribeToRemovedGrudges = `
+  subscription onDeleteGrudge {
+    onDeleteGrudge {
+      id
+      person
+      deed
+      avenged
+    }
+  }
+`;
+
 export const CreateGrudge = `
   mutation CreateGrudge(
     $person: String!

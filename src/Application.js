@@ -4,7 +4,7 @@ import Grudges from './Grudges';
 import './Application.css';
 
 import { API, graphqlOperation } from 'aws-amplify';
-import { ListGrudges, CreateGrudge, SubscribeToNewGrudges, DeleteGrudge } from './graphql'
+import { ListGrudges, CreateGrudge, SubscribeToNewGrudges, DeleteGrudge, SubscribeToRemovedGrudges } from './graphql'
 
 class Application extends Component {
   state = {
@@ -24,6 +24,16 @@ class Application extends Component {
         this.setState({ grudges: [...this.state.grudges, grudge] });
       }
     })
+
+    API.graphql(graphqlOperation(SubscribeToRemovedGrudges)).subscribe({
+      next: (response) => {
+        const grudge = response.value.data.onDeleteGrudge;
+        this.setState({
+          grudges: this.state.grudges.filter(other => other.id !== grudge.id),
+        });
+      }
+    })
+
   }
 
   addGrudge = grudge => {
@@ -35,10 +45,7 @@ class Application extends Component {
   removeGrudge = grudge => {
     API.graphql(graphqlOperation(DeleteGrudge, grudge)).then(response => {
       console.log('Removed', { response });
-      this.setState({
-        grudges: this.state.grudges.filter(other => other.id !== grudge.id),
-      });
-    });
+    }).catch(console.error);
   };
 
   toggle = grudge => {
