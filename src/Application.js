@@ -3,18 +3,41 @@ import NewGrudge from './NewGrudge';
 import Grudges from './Grudges';
 import './Application.css';
 
+import { API, graphqlOperation } from 'aws-amplify';
+import { ListGrudges, CreateGrudge, SubscribeToNewGrudges, DeleteGrudge } from './graphql'
+
 class Application extends Component {
   state = {
     grudges: [],
   };
 
+  componentDidMount() {
+    API.graphql(graphqlOperation(ListGrudges))
+      .then(response => {
+        const grudges = response.data.listGrudges.items;
+        this.setState({ grudges });
+    }).catch(console.error);
+
+    API.graphql(graphqlOperation(SubscribeToNewGrudges)).subscribe({
+      next: (response) => {
+        const grudge = response.value.data.onCreateGrudge;
+        this.setState({ grudges: [...this.state.grudges, grudge] });
+      }
+    })
+  }
+
   addGrudge = grudge => {
-    this.setState({ grudges: [grudge, ...this.state.grudges] });
+    API.graphql(graphqlOperation(CreateGrudge, grudge)).then(response => {
+      console.log('Added', { grudge });
+    }).catch(console.error);
   };
 
   removeGrudge = grudge => {
-    this.setState({
-      grudges: this.state.grudges.filter(other => other.id !== grudge.id),
+    API.graphql(graphqlOperation(DeleteGrudge, grudge)).then(response => {
+      console.log('Removed', { response });
+      this.setState({
+        grudges: this.state.grudges.filter(other => other.id !== grudge.id),
+      });
     });
   };
 
