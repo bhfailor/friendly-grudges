@@ -66,3 +66,35 @@ export const SubscribeToNewGrudges = `
     }
   }
 `;
+
+export const ToggleGrudge = `
+  mutation ToggleGrudge(
+    $id: ID!
+    $avenged: Boolean
+    $deed: String
+    $person: String
+  ) {
+    updateGrudge(input: {
+      id: $id
+      avenged: $avenged
+      deed: $deed
+      person: $person
+    }) {
+      id
+      person
+      deed
+      avenged
+    }
+  }
+`;
+
+export const SubscribeToToggledGrudges = `
+  subscription onUpdateGrudge {
+    onUpdateGrudge {
+      id
+      person
+      deed
+      avenged
+    }
+  }
+`;

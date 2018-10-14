@@ -4,7 +4,15 @@ import Grudges from './Grudges';
 import './Application.css';
 
 import { API, graphqlOperation } from 'aws-amplify';
-import { ListGrudges, CreateGrudge, SubscribeToNewGrudges, DeleteGrudge, SubscribeToRemovedGrudges } from './graphql'
+import {
+         ListGrudges,
+	 CreateGrudge,
+	 SubscribeToNewGrudges,
+	 DeleteGrudge,
+	 SubscribeToRemovedGrudges,
+	 ToggleGrudge,
+	 SubscribeToToggledGrudges
+        } from './graphql'
 
 class Application extends Component {
   state = {
@@ -34,6 +42,17 @@ class Application extends Component {
       }
     })
 
+    API.graphql(graphqlOperation(SubscribeToToggledGrudges)).subscribe({
+      next: (response) => {
+        const grudge = response.value.data.onUpdateGrudge;
+// need to replace the grudge in the grudge array
+// see commented out section below in 'toggle' method
+        this.setState({
+          grudges: this.state.grudges.filter(other => other.id !== grudge.id),
+        });
+      }
+    })
+
   }
 
   addGrudge = grudge => {
@@ -49,11 +68,18 @@ class Application extends Component {
   };
 
   toggle = grudge => {
+    const updatedGrudge = { ...grudge, avenged: !grudge.avenged };
+    API.graphql(graphqlOperation(ToggleGrudge, updatedGrudge))
+      .then(response => {
+        console.log('Toggled', { response });
+      }).catch(console.error);
+/*
     const othergrudges = this.state.grudges.filter(
       other => other.id !== grudge.id,
     );
     const updatedGrudge = { ...grudge, avenged: !grudge.avenged };
     this.setState({ grudges: [updatedGrudge, ...othergrudges] });
+*/
   };
 
   render() {
