@@ -45,11 +45,10 @@ class Application extends Component {
     API.graphql(graphqlOperation(SubscribeToToggledGrudges)).subscribe({
       next: (response) => {
         const grudge = response.value.data.onUpdateGrudge;
-// need to replace the grudge in the grudge array
-// see commented out section below in 'toggle' method
-        this.setState({
-          grudges: this.state.grudges.filter(other => other.id !== grudge.id),
-        });
+        const otherGrudges = this.state.grudges.filter(
+          other => other.id !== grudge.id,
+        );
+        this.setState({ grudges: [grudge, ...otherGrudges] });
       }
     })
 
@@ -73,13 +72,6 @@ class Application extends Component {
       .then(response => {
         console.log('Toggled', { response });
       }).catch(console.error);
-/*
-    const othergrudges = this.state.grudges.filter(
-      other => other.id !== grudge.id,
-    );
-    const updatedGrudge = { ...grudge, avenged: !grudge.avenged };
-    this.setState({ grudges: [updatedGrudge, ...othergrudges] });
-*/
   };
 
   render() {
